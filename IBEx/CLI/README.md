@@ -31,7 +31,7 @@ RUN go install github.com/danielgtaylor/restish@latest
 
 ## Configuration
 
-Create the following `apis.json` file and put it into your `$(HOME)/.restish` directory.
+Create the following `apis.json` file and put it into your `${HOME}/.restish` directory.
 
 ```
 {
