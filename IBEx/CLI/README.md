@@ -92,7 +92,7 @@ When you run the command using Docker, your Docker instance cannot interact with
 If you are using a Docker instance in the following you should adapt the command by replacing the `restish` command by something like (assuming the Docker image is named `ibex-cli`):
 ```
 docker run --rm \
-  -v $(HOME)/.restish:/root/.restish \
+  -v ${HOME}/.restish:/root/.restish \
   ibex-cli \
   restish
 ```
