@@ -1,0 +1,522 @@
+openapi: 3.0.1
+info:
+  title: IBEx API
+  description: IBEx API
+  contact:
+    name: IBEx team
+    url: 'https://pro.ib.exchange/'
+    email: contact@inblocks.io
+  version: '0.1'
+paths:
+  /spot/orders:
+    get:
+      operationId: getOrders
+      parameters:
+        - name: productCurrency
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/Currency'
+        - name: productType
+          in: query
+          required: false
+          schema:
+            nullable: true
+            oneOf:
+              - $ref: '#/components/schemas/LedgerClient.Account.Meta.Type'
+        - name: unitPriceCurrency
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/Currency'
+        - name: unitPriceType
+          in: query
+          required: false
+          schema:
+            nullable: true
+            oneOf:
+              - $ref: '#/components/schemas/LedgerClient.Account.Meta.Type'
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Order.Status'
+            nullable: true
+        - name: offset
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int32
+            default: 0
+            minimum: 0
+        - name: limit
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int32
+            default: 100
+            maximum: 1000
+            minimum: 1
+        - name: sort
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+            nullable: true
+      responses:
+        '200':
+          description: getOrders_1 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Search_Order_'
+      tags:
+        - /spot
+    post:
+      operationId: createOrder
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  $ref: '#/components/schemas/Order.Type'
+                product:
+                  $ref: '#/components/schemas/Order.ValueCurrencyType'
+                unitPrice:
+                  $ref: '#/components/schemas/Order.ValueCurrencyType'
+              required:
+                - product
+                - type
+                - unitPrice
+        required: true
+      responses:
+        '200':
+          description: createOrder_1 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+      tags:
+        - /spot
+  '/spot/orders/{id}':
+    delete:
+      operationId: cancelOrder
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: cancelOrder_1 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+      tags:
+        - /spot
+  /spot/pairs:
+    get:
+      operationId: getEnabledPairs
+      responses:
+        '200':
+          description: getEnabledPairs 200 response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PairPublicConf'
+      tags:
+        - /spot
+  /spot/price:
+    get:
+      operationId: getPrice
+      parameters:
+        - name: productCurrency
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/Currency'
+        - name: productType
+          in: query
+          required: false
+          schema:
+            nullable: true
+            oneOf:
+              - $ref: '#/components/schemas/LedgerClient.Account.Meta.Type'
+        - name: unitPriceCurrency
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/Currency'
+        - name: unitPriceType
+          in: query
+          required: false
+          schema:
+            nullable: true
+            oneOf:
+              - $ref: '#/components/schemas/LedgerClient.Account.Meta.Type'
+      responses:
+        '200':
+          description: getPrice 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PairPrice'
+      tags:
+        - /spot
+components:
+  schemas:
+    Currency:
+      description: 'Currency'
+      type: string
+      enum:
+        - IBXE
+        - MAMAR
+        - POWER
+    LedgerClient.Account.Meta.Type:
+      type: string
+      enum:
+        - MAIN
+    Object:
+      type: object
+    OneOf:
+      type: object
+      properties:
+        weightedSelections:
+          type: array
+          items:
+            $ref: '#/components/schemas/Weighted_Selection_'
+          minItems: 1
+      required:
+        - weightedSelections
+    Order:
+      type: object
+      properties:
+        id:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        ownerId:
+          type: string
+        type:
+          $ref: '#/components/schemas/Order.Type'
+        status:
+          $ref: '#/components/schemas/Order.Status'
+        product:
+          $ref: '#/components/schemas/Order.ValueCurrencyType'
+        unitPrice:
+          $ref: '#/components/schemas/Order.ValueCurrencyType'
+      required:
+        - createdAt
+        - ownerId
+        - product
+        - type
+        - unitPrice
+    Order.Status:
+      type: string
+      enum:
+        - OPEN
+        - CANCELED
+        - COMPLETED
+    Order.Type:
+      type: string
+      enum:
+        - BUY
+        - SELL
+    Order.ValueCurrencyType:
+      type: object
+      properties:
+        value:
+          type: number
+        currency:
+          $ref: '#/components/schemas/Currency'
+        type:
+          $ref: '#/components/schemas/LedgerClient.Account.Meta.Type'
+      required:
+        - currency
+        - type
+        - value
+    Pair:
+      type: object
+      properties:
+        productCurrency:
+          $ref: '#/components/schemas/Currency'
+        productType:
+          $ref: '#/components/schemas/LedgerClient.Account.Meta.Type'
+        unitPriceCurrency:
+          $ref: '#/components/schemas/Currency'
+        unitPriceType:
+          $ref: '#/components/schemas/LedgerClient.Account.Meta.Type'
+      required:
+        - productCurrency
+        - productType
+        - unitPriceCurrency
+        - unitPriceType
+    PairPrice:
+      allOf:
+        - $ref: '#/components/schemas/Pair'
+        - type: object
+          properties:
+            at:
+              type: string
+              format: date-time
+            price:
+              type: number
+    PairPrivateConf.State:
+      type: string
+      enum:
+        - ENABLED
+        - DISABLED
+    PairPublicConf:
+      allOf:
+        - $ref: '#/components/schemas/Pair'
+        - type: object
+          properties:
+            productPrecision:
+              type: integer
+              format: int32
+            unitPricePrecision:
+              type: integer
+              format: int32
+            checkout:
+              $ref: '#/components/schemas/PairPrivateConf.State'
+            whitelist:
+              type: array
+              items:
+                type: string
+    PrecedenceClient.Response.Record:
+      type: object
+      properties:
+        provable:
+          $ref: '#/components/schemas/PrecedenceClient.Response.Record.Provable'
+        timestamp:
+          type: integer
+          format: int64
+        seed:
+          type: string
+        hash:
+          type: string
+        chains:
+          type: object
+          additionalProperties:
+            type: string
+        address:
+          type: string
+        signature:
+          type: string
+        data:
+          $ref: '#/components/schemas/PrecedenceClient.Response.Record.Data'
+        block:
+          $ref: '#/components/schemas/PrecedenceClient.Response.Record.Block'
+      required:
+        - address
+        - block
+        - chains
+        - data
+        - hash
+        - provable
+        - seed
+        - signature
+        - timestamp
+    PrecedenceClient.Response.Record.Block:
+      type: object
+      properties:
+        index:
+          type: integer
+          format: int64
+        root:
+          type: string
+        timestamp:
+          type: integer
+          format: int64
+        proof:
+          type: array
+          items:
+            type: string
+        inblocks:
+          $ref: '#/components/schemas/PrecedenceClient.Response.Record.Block.Inblocks'
+      required:
+        - inblocks
+        - index
+        - proof
+        - root
+        - timestamp
+    PrecedenceClient.Response.Record.Block.Inblocks:
+      type: object
+      properties:
+        record:
+          $ref: '#/components/schemas/PrecedenceClient.Response.Record'
+        ethereum:
+          $ref: '#/components/schemas/PrecedenceClient.Response.Record.Block.Inblocks.Ethereum'
+        proof:
+          type: array
+          items:
+            type: string
+        inblocks:
+          $ref: '#/components/schemas/PrecedenceClient.Response.Record.Block.Inblocks'
+      required:
+        - ethereum
+        - inblocks
+        - proof
+        - record
+    PrecedenceClient.Response.Record.Block.Inblocks.Ethereum:
+      type: object
+      properties:
+        block:
+          type: integer
+          format: int64
+        transaction:
+          type: string
+        address:
+          type: string
+      required:
+        - address
+        - block
+        - transaction
+    PrecedenceClient.Response.Record.Data:
+      type: object
+      properties:
+        bytes:
+          type: integer
+          format: int64
+      required:
+        - bytes
+    PrecedenceClient.Response.Record.Provable:
+      type: object
+      properties:
+        id:
+          type: string
+        seed:
+          type: string
+        hash:
+          type: string
+        chains:
+          type: object
+          additionalProperties:
+            type: string
+        previous:
+          type: array
+          items:
+            type: string
+        address:
+          type: string
+        signature:
+          type: string
+      required:
+        - address
+        - chains
+        - hash
+        - id
+        - previous
+        - seed
+        - signature
+    Search_Order_:
+      type: object
+      properties:
+        offset:
+          type: integer
+          format: int64
+        size:
+          type: integer
+          format: int64
+        total:
+          type: integer
+          format: int64
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Object'
+      required:
+        - offset
+        - results
+        - size
+        - total
+    Selection:
+      type: object
+      anyOf:
+        - $ref: '#/components/schemas/FromClass'
+        - $ref: '#/components/schemas/FromSerie'
+        - $ref: '#/components/schemas/OneOf'
+        - $ref: '#/components/schemas/TheCard'
+        - $ref: '#/components/schemas/Times'
+        - $ref: '#/components/schemas/Together'
+    TheCard:
+      type: object
+      properties:
+        cardClass:
+          type: string
+          minLength: 1
+        cardSerie:
+          type: string
+          minLength: 1
+        orderNumber:
+          type: integer
+          format: int32
+      required:
+        - cardClass
+        - cardSerie
+        - orderNumber
+    Times:
+      type: object
+      properties:
+        count:
+          type: integer
+          format: int32
+          minimum: 0
+        selection:
+          $ref: '#/components/schemas/Selection'
+      required:
+        - count
+        - selection
+    Together:
+      type: object
+      properties:
+        selections:
+          type: array
+          items:
+            $ref: '#/components/schemas/Selection'
+      required:
+        - selections
+    Weighted_Selection_:
+      type: object
+      properties:
+        thing:
+          $ref: '#/components/schemas/Selection'
+        weight:
+          type: integer
+          format: int32
+          minimum: 0
+      required:
+        - thing
+        - weight
+  securitySchemes:
+    default:
+      type: oauth2
+x-cli-config:
+  security: default
